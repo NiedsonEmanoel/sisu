@@ -4,7 +4,51 @@ import numpy as np
 
 import pandas as pd
 
+def make_soups(dfSOUP):
+    if len(dfSOUP) == 0: return '<h4>Estou triste..., estude mais!</h4>'
+    final_soup = ''
+    dfSOUP.reset_index()
+
+    countsoup = 1
+
+
+    for i in dfSOUP.index:
+
+        dif = round(dfSOUP.loc[i, 'DIF'],2)
+        recomDIF = ''
+        if dif <= 0:
+            recomDIF = 'Aguardar remanejamento.'
+        elif dif <= 8:
+            recomDIF = 'Zona de Ponto de Corte'
+        else:
+            recomDIF = 'Praticamente aprovado.'
+        
+        soups = f'''
+<div class="card">
+<div class="card-body">
+<h5 class="card-title">{countsoup}º Opção: {dfSOUP.loc[i, 'NO_CURSO']} - {dfSOUP.loc[i, 'SG_IES_PP']}</h5>
+<p class="card-text">{dfSOUP.loc[i, 'NO_CAMPUS']} - {dfSOUP.loc[i, 'NO_MUNICIPIO_CAMPUS_PP']}/{dfSOUP.loc[i, 'SG_UF_CAMPUS_PP']}</p>
+<p class="card-text"><i>{dfSOUP.loc[i, 'DS_MOD_CONCORRENCIA']}</i></p>
+
+<hr>
+<p class="card-text"><b>Sua nota final da modalidade: {round(dfSOUP.loc[i, 'MEDIA_COM_BONUS'],2)}</b></p>
+<hr>
+<p class="card-text"><i><b>Diferença para o corte ({round(dfSOUP.loc[i, 'NU_NOTACORTE'],2)}): {round(dfSOUP.loc[i, 'DIF'],2)}</b></i>  <i>({recomDIF})</i></p>
+</div>
+</div>
+<br>
+'''
+        final_soup = final_soup + soups
+        countsoup = countsoup+1
+    return final_soup
+
 def main():
+    st.markdown(f'<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>',unsafe_allow_html=True)
+    st.markdown(f'<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>',unsafe_allow_html=True)
+    st.markdown(f'<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>',unsafe_allow_html=True)
+    st.markdown(f'<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">',unsafe_allow_html=True)
+
+
     dfSisu = pd.read_csv('./2023.1/sisu2023.1.csv', encoding='utf-8', decimal=',')
 
     st.header('Simulador SISU (2023.1)')
@@ -143,11 +187,24 @@ def main():
         dfSisu = dfSisu[dfSisu['DIF']>= -28]
         dfSisu.sort_values('DIF', ascending=False, inplace=True)
         st.divider()
-        st.caption('Suas melhores opções...')
-        st.write(dfSisu.reset_index())
+    
+        pre_soups = f'''<h5>Suas melhores opções</h5><div class="card-rows">'''
 
-        st.subheader('*feito por: Niedson Emanoel.')
+        soups = make_soups(dfSisu)
 
+        pos_soups = f'''</div>'''
+        st.markdown(f'''
+{pre_soups}
+
+{soups}
+
+
+{pos_soups}
+    ''',
+    unsafe_allow_html=True)
+
+        st.markdown(f'''<h6>Feito por <b>Niedson Emanoel</b></h6>''',
+    unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
