@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 def make_soups(dfSOUP):
-    if len(dfSOUP) == 0: return '<h4>Estou triste..., estude mais!</h4>'
+    if len(dfSOUP) == 0: return '<h4>Sem opções viáveis<h6>Estou triste... estude mais!</h6></h4>'
     final_soup = ''
     dfSOUP.reset_index()
 
@@ -82,7 +82,7 @@ def main():
             dfSisu['SG_UF_CAMPUS_PP'].unique())
 
     continuob = 0
-
+    continuoc = 0
     if len(uf) > 0:
         dfSisu = dfSisu.query('SG_UF_CAMPUS_PP == @uf')
         continuob = 0
@@ -92,6 +92,7 @@ def main():
             dfSisu['DS_MOD_CONCORRENCIA'].unique(), ['Ampla concorrência'])
         if len(modalidade) > 0:
             dfSisu = dfSisu.query('DS_MOD_CONCORRENCIA == @modalidade')
+            continuoc = 1
             continuob =1
 
     if continuob==1:
@@ -171,41 +172,35 @@ def main():
     #st.write(f'Segundo maior valor em formato de dicionário:\n{second_largest_value_row}')
 
     if continuob==1:
-        st.divider()
-        col1, col2, col3 = st.columns(3)
-        col1.metric(label="Menor nota de corte", value=f"{round(notaMenor,2)}", delta=f"{nomeMenor} - {ufMenor}")
-        col1.metric(label="Sua 1ª melhor opção:", value=f"{max_value_row['SG_IES_PP']}", delta=f"{round(max_value_row['DIF'],2)} DIF p/ o Corte em {max_value_row['NO_MUNICIPIO_CAMPUS_PP']}/{max_value_row['SG_UF_CAMPUS_PP']}")
+        if continuoc == 1:
+            st.divider()
+            col1, col2, col3 = st.columns(3)
+            col1.metric(label="Menor nota de corte", value=f"{round(notaMenor,2)}", delta=f"{nomeMenor} - {ufMenor}")
+            col1.metric(label="Sua 1ª melhor opção:", value=f"{max_value_row['SG_IES_PP']}", delta=f"{round(max_value_row['DIF'],2)} DIF p/ o Corte em {max_value_row['NO_MUNICIPIO_CAMPUS_PP']}/{max_value_row['SG_UF_CAMPUS_PP']}")
 
-        col2.metric("Sua melhor média (com pesos)", f"{round(NotaMaiorMed,2)}", f'{nomeMaiorMed}/{ufMaiorMed}; Corte: {dorteMaiorMed}')
-        if NotaMaiorMeda != NotaMaiorMed:
-            col2.metric("Sua melhor média (com Bônus)", f"{round(NotaMaiorMeda,2)}", f'{nomeMaiorMeda}/{ufMaiorMeda}; Corte: {dorteMaiorMeda}')
-        else:
-            col2.metric("Sua média (simples)", f"{round(((lc+ch+cn+mt+redacao)/5),2)}") 
-        col3.metric("Menor relação candidato/vaga", f"{round(CVMenor,2)} - {nomeMenorCV}", f"Corte: {round(notaMenorCV,2)}")
-        col3.metric(label="Sua 2ª melhor opção:", value=f"{second_largest_value_row['SG_IES_PP']}", delta=f"{round(second_largest_value_row['DIF'],2)} DIF p/ o Corte em {second_largest_value_row['NO_MUNICIPIO_CAMPUS_PP']}/{second_largest_value_row['SG_UF_CAMPUS_PP']}")
-
-
-        dfSisu = dfSisu[dfSisu['DIF']>= -28]
-        dfSisu.sort_values('DIF', ascending=False, inplace=True)
-        st.divider()
-    
-        pre_soups = f'''<h5>Suas melhores opções</h5><div class="card-rows">'''
-
-        soups = make_soups(dfSisu)
-
-        pos_soups = f'''</div>'''
-        st.markdown(f'''
-{pre_soups}
-
-{soups}
+            col2.metric("Sua melhor média (com pesos)", f"{round(NotaMaiorMed,2)}", f'{nomeMaiorMed}/{ufMaiorMed}; Corte: {dorteMaiorMed}')
+            if NotaMaiorMeda != NotaMaiorMed:
+                col2.metric("Sua melhor média (com Bônus)", f"{round(NotaMaiorMeda,2)}", f'{nomeMaiorMeda}/{ufMaiorMeda}; Corte: {dorteMaiorMeda}')
+            else:
+                col2.metric("Sua média (simples)", f"{round(((lc+ch+cn+mt+redacao)/5),2)}") 
+            col3.metric("Menor relação candidato/vaga", f"{round(CVMenor,2)} - {nomeMenorCV}", f"Corte: {round(notaMenorCV,2)}")
+            col3.metric(label="Sua 2ª melhor opção:", value=f"{second_largest_value_row['SG_IES_PP']}", delta=f"{round(second_largest_value_row['DIF'],2)} DIF p/ o Corte em {second_largest_value_row['NO_MUNICIPIO_CAMPUS_PP']}/{second_largest_value_row['SG_UF_CAMPUS_PP']}")
 
 
-{pos_soups}
-    ''',
-    unsafe_allow_html=True)
+            dfSisu = dfSisu[dfSisu['DIF']>= -30]
+            dfSisu.sort_values('DIF', ascending=False, inplace=True)
+            st.divider()
+        
+            pre_soups = f'''<h5>Suas melhores opções (viáveis):</h5><div class="card-rows">'''
 
-        st.markdown(f'''<h6>Feito por <b>Niedson Emanoel</b></h6>''',
-    unsafe_allow_html=True)
+            soups = make_soups(dfSisu)
+
+            pos_soups = f'''</div>'''
+            st.markdown(f'''{pre_soups}{soups}{pos_soups}''',
+        unsafe_allow_html=True)
+
+            st.markdown(f'''<h6>Feito por <b>Niedson Emanoel</b></h6>''',
+        unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
