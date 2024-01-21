@@ -21,5 +21,6 @@ df_merged = df_merged.filter(regex='^(?!.*_vagas$)')
 # Visualizar o dataframe resultante
 df_merged['NU_NOTACORTE'].fillna(0, inplace=True)
 df_merged['QT_INSCRICAO'].fillna(0, inplace=True)
+
 df_merged.to_csv('sisu2023.1.csv', index=False, encoding='utf-8', decimal=',')
 df_merged.to_excel('sisu2023.1.xlsx', index=False)
