@@ -80,7 +80,7 @@ def main():
             cursos = st.multiselect(
                 'Cursos de sua preferência',
                 dfSisu['NO_CURSO'].unique(),
-                ['MEDICINA'])
+                ['MEDICINA'], placeholder="Selecione o curso de seu interesse...")
         if len(cursos) > 0:
             dfSisu = dfSisu.query('NO_CURSO == @cursos')
 
