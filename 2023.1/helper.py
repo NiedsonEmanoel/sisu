@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 
 # Leitura dos dataframes
-dfVagas = pd.read_csv('./Brutos/vagas.csv', encoding='utf-8', decimal=',')
+dfVagas = pd.read_excel('R (2).xlsx')
 #dfVagas = dfVagas[dfVagas['NO_CURSO']=='MEDICINA']
-dfInscricoes = pd.read_csv('./Brutos/inscricoes.csv', encoding='utf-8', decimal=',')
+dfInscricoes = pd.read_excel('R (1).xlsx')
 #dfInscricoes = dfInscricoes[dfInscricoes['NO_CURSO']=='MEDICINA']
 
 # Colunas em comum
@@ -22,5 +22,5 @@ df_merged = df_merged.filter(regex='^(?!.*_vagas$)')
 df_merged['NU_NOTACORTE'].fillna(0, inplace=True)
 df_merged['QT_INSCRICAO'].fillna(0, inplace=True)
 
-df_merged.to_csv('sisu2023.1.csv', index=False, encoding='utf-8', decimal=',')
-df_merged.to_excel('sisu2023.1.xlsx', index=False)
+df_merged.to_csv('sisu.csv', index=False, encoding='utf-8', decimal=',')
+df_merged.to_excel('sisu.xlsx', index=False)
