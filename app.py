@@ -50,9 +50,10 @@ def main():
     st.markdown(f'<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">',unsafe_allow_html=True)
 
 
+
+    st.header('Relatório SISU')
     dfSisu = pd.read_csv('./2023.1/sisu2023.1.csv', encoding='utf-8', decimal=',')
 
-    st.header('Simulador SISU (2023.1)')
     st.divider()
     st.subheader('Notas Enem:')
     col1, col2 = st.columns(2)
