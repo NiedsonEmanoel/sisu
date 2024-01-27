@@ -25,7 +25,7 @@ def make_soups(dfSOUP):
         
         soups = f'''
 <div class="card">
-<div class="card-body">
+<div class="card-body" style="color:black;">
 <h5 class="card-title">{countsoup}º Opção: {dfSOUP.loc[i, 'NO_CURSO']} - {dfSOUP.loc[i, 'SG_IES_PP']}</h5>
 <p class="card-text">{dfSOUP.loc[i, 'NO_CAMPUS']} - {dfSOUP.loc[i, 'NO_MUNICIPIO_CAMPUS_PP']}/{dfSOUP.loc[i, 'SG_UF_CAMPUS_PP']}</p>
 <p class="card-text"><i>{dfSOUP.loc[i, 'DS_MOD_CONCORRENCIA']}</i></p>
