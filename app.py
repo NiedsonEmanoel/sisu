@@ -1,8 +1,10 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-
+import streamlit_authenticator as stauth
 import pandas as pd
+import requests
+import json
 
 def make_soups(dfSOUP):
     if len(dfSOUP) == 0: return '<h4>Sem opções viáveis<h6>Estou triste... estude mais!</h6></h4>'
@@ -46,7 +48,59 @@ def main():
     st.set_page_config(layout="wide", page_title='SISU • Enemaster.app', page_icon="🧊", menu_items={
         'About': "# Feito por *enemaster.app*"
     })
-    
+
+    def otpAdmVerify(otp):
+        otp = str(otp)
+        base_url = f'https://admin.otp.functions.api.enemaster.app.br/?code={otp}'
+        responde = requests.get(base_url)
+        data = json.loads(responde.text)
+        return data['sign']
+
+    def check_password():
+        """Returns `True` if the user had the correct password."""
+
+        def password_entered():
+            """Checks whether a password entered by the user is correct."""
+            if otpAdmVerify(st.session_state["password"]):
+                st.session_state["password_correct"] = True
+                del st.session_state["password"]  # Don't store the password.
+            else:
+                st.session_state["password_correct"] = False
+
+        # Return True if the password is validated.
+        if st.session_state.get("password_correct", False):
+            return True
+
+        # Show input for password.
+        st.header('Relatório SISU')
+        st.divider()
+        inheader = st.selectbox(
+    'Edição SiSU',
+    ('2023.2', '2023.1', '2022.2', '2022.1', '2021.2', '2021.1', '2020.2', '2020.1', '2019.2', '2019.1'), index=None, placeholder="Selecione o sisu de interesse...")
+        st.session_state['inheader'] = f'https://cdn.enemaster.app.br/Relat%C3%B3rios_SISU/{inheader}/sisu.csv'
+        st.divider()
+        st.subheader('Notas Enem:')
+        col1, col2 = st.columns(2)
+        with col1:
+            st.session_state['lc'] = st.number_input('Linguagens', min_value = 0.0, max_value=1000.0, step=0.1)
+            st.session_state['ch'] = st.number_input('Humanas', min_value = 0.0, max_value=1000.0, step=0.1)
+        with col2:
+            st.session_state['cn'] = st.number_input('Natureza', min_value = 0.0, max_value=1000.0, step=0.1)
+            st.session_state['mt'] = st.number_input('Matemática', min_value = 0.0, max_value=1000.0, step=0.1)
+        st.session_state['redacao'] = st.number_input('Redação', min_value = 0, max_value=1000, step=20)
+        st.divider()
+        st.text_input(
+            "Enemaster Admin OTP", max_chars=6, on_change=password_entered, key="password"
+        )
+        if "password_correct" in st.session_state:
+            st.error("😕 Senha incorreta")
+        st.divider()
+        return False
+
+
+    if not check_password():
+        st.stop()  # Do not continue if check_password is not True.
+ 
     st.markdown(f'<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>',unsafe_allow_html=True)
     st.markdown(f'<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>',unsafe_allow_html=True)
     st.markdown(f'<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>',unsafe_allow_html=True)
@@ -54,36 +108,23 @@ def main():
     
 
     st.header('Relatório SISU')
-    luel = 0
-    inheader = st.selectbox(
-    'Qual sua edição de interesse?',
-    ('2023.2', '2023.1', '2022.2', '2022.1', '2021.2', '2021.1', '2020.2', '2020.1', '2019.2', '2019.1'), index=None, placeholder="Selecione o sisu de interesse...")
+    st.divider()
+    dfSisu = pd.read_csv(st.session_state['inheader'], encoding='utf-8', decimal=',')
+    lc = st.session_state['lc']
+    ch = st.session_state['ch']
+    cn = st.session_state['cn']
+    mt = st.session_state['mt']
+    redacao = st.session_state['redacao']
 
-    if inheader != None: luel =1
-    if luel == 1:
-        dfSisu = pd.read_csv(f'https://cdn.enemaster.app.br/Relat%C3%B3rios_SISU/{inheader}/sisu.csv', encoding='utf-8', decimal=',')
-
-        st.divider()
-        st.subheader('Notas Enem:')
-        col1, col2 = st.columns(2)
-        with col1:
-            lc = st.number_input('Linguagens', min_value = 0.0, max_value=1000.0, step=0.1)
-            ch = st.number_input('Humanas', min_value = 0.0, max_value=1000.0, step=0.1)
-        with col2:
-            cn = st.number_input('Natureza', min_value = 0.0, max_value=1000.0, step=0.1)
-            mt = st.number_input('Matemática', min_value = 0.0, max_value=1000.0, step=0.1)
-        redacao = st.number_input('Redação', min_value = 0, max_value=1000, step=20)
-        st.divider()
-
+    if (lc>5) and (ch>5) and (cn>5) and (mt>5) and (redacao >39):
         uf = []
         cursos = []
 
-        if ((lc+ch+cn+mt+redacao)/5) > 100:
-            st.subheader('Preferências:')
-            cursos = st.multiselect(
-                'Cursos de sua preferência',
-                dfSisu['NO_CURSO'].unique(),
-                ['MEDICINA'], placeholder="Selecione o curso de seu interesse...")
+        st.subheader('Preferências:')
+        cursos = st.multiselect(
+            'Cursos de sua preferência',
+            dfSisu['NO_CURSO'].unique(),
+            ['MEDICINA'], placeholder="Selecione o curso de seu interesse...")
         if len(cursos) > 0:
             dfSisu = dfSisu.query('NO_CURSO == @cursos')
 
@@ -118,7 +159,7 @@ def main():
                                         (1 - (dfSisu['QT_INSCRICAO'] / (dfSisu['QT_VAGAS_CONCORRENCIA'] + 1))) * -1,
                                         dfSisu['QT_INSCRICAO'] / dfSisu['QT_VAGAS_CONCORRENCIA'])
         except:
-             dfSisu['CAND_VAGA'] = 0                       
+            dfSisu['CAND_VAGA'] = 0                       
 
         dfSisu['MEDIA_SEM_BONUS'] = ((dfSisu['PESO_REDACAO']*redacao+dfSisu['PESO_LINGUAGENS']*lc+dfSisu['PESO_MATEMATICA']*mt+dfSisu['PESO_CIENCIAS_HUMANAS']*ch+dfSisu['PESO_CIENCIAS_NATUREZA']*cn)/(dfSisu['PESO_REDACAO']+dfSisu['PESO_LINGUAGENS']+dfSisu['PESO_MATEMATICA']+dfSisu['PESO_CIENCIAS_HUMANAS']+dfSisu['PESO_CIENCIAS_NATUREZA']))
         dfSisu['MEDIA_COM_BONUS'] = ((100+dfSisu['NU_PERCENTUAL_BONUS_PP'])/100)*((dfSisu['PESO_REDACAO']*redacao+dfSisu['PESO_LINGUAGENS']*lc+dfSisu['PESO_MATEMATICA']*mt+dfSisu['PESO_CIENCIAS_HUMANAS']*ch+dfSisu['PESO_CIENCIAS_NATUREZA']*cn)/(dfSisu['PESO_REDACAO']+dfSisu['PESO_LINGUAGENS']+dfSisu['PESO_MATEMATICA']+dfSisu['PESO_CIENCIAS_HUMANAS']+dfSisu['PESO_CIENCIAS_NATUREZA']))
