@@ -49,6 +49,7 @@ def main():
         'About': "# Feito por *enemaster.app*"
     })
 
+    
     def otpAdmVerify(otp):
         otp = str(otp)
         base_url = f'https://admin.otp.functions.api.enemaster.app.br/?code={otp}'
@@ -56,71 +57,42 @@ def main():
         data = json.loads(responde.text)
         return data['sign']
 
-    def check_password():
-        """Returns `True` if the user had the correct password."""
 
-        def password_entered():
-            """Checks whether a password entered by the user is correct."""
-            if otpAdmVerify(st.session_state["password"]):
-                st.session_state["password_correct"] = True
-                del st.session_state["password"]  # Don't store the password.
-            else:
-                st.session_state["password_correct"] = False
-
-        # Return True if the password is validated.
-        if st.session_state.get("password_correct", False):
-            return True
-
-        # Show input for password.
-        st.header('Relatório SISU')
-        st.divider()
-        inheader = st.selectbox(
-    'Edição SiSU',
-    ('2023.2', '2023.1', '2022.2', '2022.1', '2021.2', '2021.1', '2020.2', '2020.1', '2019.2', '2019.1'), index=None, placeholder="Selecione o sisu de interesse...")
-        st.session_state['inheader'] = f'https://cdn.enemaster.app.br/Relat%C3%B3rios_SISU/{inheader}/sisu.csv'
-        st.divider()
-        st.subheader('Notas Enem:')
-        col1, col2 = st.columns(2)
-        with col1:
-            st.session_state['lc'] = st.number_input('Linguagens', min_value = 0.0, max_value=1000.0, step=0.1)
-            st.session_state['ch'] = st.number_input('Humanas', min_value = 0.0, max_value=1000.0, step=0.1)
-        with col2:
-            st.session_state['cn'] = st.number_input('Natureza', min_value = 0.0, max_value=1000.0, step=0.1)
-            st.session_state['mt'] = st.number_input('Matemática', min_value = 0.0, max_value=1000.0, step=0.1)
-        st.session_state['redacao'] = st.number_input('Redação', min_value = 0, max_value=1000, step=20)
-        st.divider()
-        st.text_input(
-            "Enemaster Admin OTP", max_chars=6, on_change=password_entered, key="password"
-        )
-        if "password_correct" in st.session_state:
-            st.error("😕 Senha incorreta")
-        st.divider()
-        return False
-
-
-    if not check_password():
-        st.stop()  # Do not continue if check_password is not True.
- 
     st.markdown(f'<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>',unsafe_allow_html=True)
     st.markdown(f'<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>',unsafe_allow_html=True)
     st.markdown(f'<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>',unsafe_allow_html=True)
     st.markdown(f'<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">',unsafe_allow_html=True)
     
 
-    st.header('Relatório SISU')
-    st.divider()
-    dfSisu = pd.read_csv(st.session_state['inheader'], encoding='utf-8', decimal=',')
-    lc = st.session_state['lc']
-    ch = st.session_state['ch']
-    cn = st.session_state['cn']
-    mt = st.session_state['mt']
-    redacao = st.session_state['redacao']
+    try:
+        sosi = st.experimental_get_query_params()['sisu'][0]
+        dfSisu = pd.read_csv(f'RS/{sosi}/sisu.csv', encoding='utf-8', decimal=',')
+        st.header(f'Relatório sisu Enemaster'.upper())
+        inheader = st.selectbox(
+    f'Não deseja a edição {sosi}? Selecione outra de interesse',
+    (sosi, '2023.2', '2023.1', '2022.2', '2022.1', '2021.2', '2021.1', '2020.2', '2020.1', '2019.2', '2019.1'), index=0, placeholder=f"{sosi}")
+        
+        if inheader != sosi:
+            sosi = inheader
+            dfSisu = pd.read_csv(f'RS/{sosi}/sisu.csv', encoding='utf-8', decimal=',')
+        lc = float(float(st.experimental_get_query_params()['lc'][0]))
+        ch = float(float(st.experimental_get_query_params()['ch'][0]))
+        cn = float(float(st.experimental_get_query_params()['cn'][0]))
+        mt = float(float(st.experimental_get_query_params()['mt'][0]))
+        redacao = float(float(st.experimental_get_query_params()['red'][0]))
+
+        st.divider()
+        
+
+    except:
+        st.header('Informe corretamente os dados!')
+        st.stop()
 
     if (lc>5) and (ch>5) and (cn>5) and (mt>5) and (redacao >39):
         uf = []
         cursos = []
 
-        st.subheader('Preferências:')
+        st.subheader(f'Preferências ({sosi}):')
         cursos = st.multiselect(
             'Cursos de sua preferência',
             dfSisu['NO_CURSO'].unique(),
@@ -272,7 +244,7 @@ def main():
                 st.markdown(f'''{pre_soups}{soups}{pos_soups}''',
             unsafe_allow_html=True)
 
-                st.markdown(f'<img class="rounded mx-auto d-block" width="30%" src="https://cdn.enemaster.app.br/Images/logo.png">',unsafe_allow_html=True)
+                st.markdown(f'<img class="rounded mx-auto d-block" width="200px" height="200px" src="https://cdn.statically.io/gh/NiedsonEmanoel/CDN_ENEMASTER/main/Images/enemaster-high.png">',unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
