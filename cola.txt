@@ -1,0 +1,2 @@
+docker build . -t niedsonemanoel/sisu:v3
+docker push  niedsonemanoel/sisu:v3
