@@ -61,7 +61,7 @@ def main():
 
     if inheader != None: luel =1
     if luel == 1:
-        dfSisu = pd.read_csv(f'https://cdn.enemaster.app.br/Relat%C3%B3rios_SISU/{inheader}/sisu.csv', encoding='utf-8', decimal=',')
+        dfSisu = pd.read_csv(f'RS/{inheader}/sisu.csv', encoding='utf-8', decimal=',')
 
         st.divider()
         st.subheader('Notas Enem:')
